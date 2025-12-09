@@ -8,6 +8,8 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * This represents a bank account from a financial instution.
  */
@@ -20,6 +22,7 @@ public class BankAccount {
     @Property("name")
     private String name;
 
+    @JsonIgnore
     @Relationship(type = "ORIGINATED_FROM", direction = Relationship.Direction.INCOMING)
     private List<BankTransaction> transactions;
 }

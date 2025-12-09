@@ -5,6 +5,8 @@ import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Node("Transaction")
 public class BankTransaction {
     @Id
@@ -14,6 +16,7 @@ public class BankTransaction {
     /**
      * The bank account from which this transaction first originated.
      */
+    @JsonIgnore
     @Relationship(type = "ORIGINATED_FROM", direction = Relationship.Direction.OUTGOING)
     private BankAccount originatingBankAccount;
 }
