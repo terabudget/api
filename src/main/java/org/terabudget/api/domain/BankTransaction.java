@@ -1,20 +1,20 @@
 package org.terabudget.api.domain;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
-import org.springframework.data.neo4j.core.schema.Node;
-import org.springframework.data.neo4j.core.schema.Relationship;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-@Node("Transaction")
+/**
+ * This represents a bank transaction from a financial institution.
+ */
+@Entity
 @Data
 public class BankTransaction {
     @Id
-    @GeneratedValue
     private String id;
 
     /**
@@ -22,6 +22,6 @@ public class BankTransaction {
      */
     @NotBlank(message = "Originating bank account must not be blank")
     @JsonIgnore
-    @Relationship(type = "ORIGINATED_FROM", direction = Relationship.Direction.OUTGOING)
+    @ManyToOne
     private BankAccount originatingBankAccount;
 }
