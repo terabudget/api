@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "org.terabudget.authentication.accessTokenExpirationMs",
+      "type": "java.lang.String",
+      "description": "A description for 'org.terabudget.authentication.accessTokenExpirationMs'"
+    },
+    {
+      "name": "org.terabudget.authentication.jwtSecret",
+      "type": "java.lang.String",
+      "description": "A description for 'org.terabudget.authentication.jwtSecret'"
+    },
+    {
+      "name": "org.terabudget.authentication.refreshTokenExpirationMs",
+      "type": "java.lang.String",
+      "description": "A description for 'org.terabudget.authentication.refreshTokenExpirationMs'"
+    },
+    {
+      "name": "org.terabudget.authentication.jwtSecret",
+      "type": "java.lang.String",
+      "description": "A description for 'org.terabudget.authentication.jwtSecret'"
+    }
+  ]
+}

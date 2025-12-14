@@ -1,4 +1,4 @@
-package org.terabudget.api.dao.repository;
+package org.terabudget.api.repository;
 
 import java.util.List;
 

@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: bank-account-001
+      author: https://github.com/daveclayton
+      changes:
+        - createTable:
+            tableName: bank_account
+            columns:
+              - column:
+                  name: id
+                  type: CHAR(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false

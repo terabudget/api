@@ -19,7 +19,7 @@ import lombok.Data;
 @Data
 public class BankAccount {
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "uuid")
     private String id;
 
     @NotBlank(message = "Bank account name must not be blank")

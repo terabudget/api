@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: oauth-client-001
+      author: https://github.com/daveclayton
+      changes:
+        - createTable:
+            tableName: oauth_client
+            columns:
+              - column:
+                  name: id
+                  type: CHAR(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: secret
+                  type: VARCHAR(255)
+  - changeSet:
+      id: oauth-client-002
+      author: https://github.com/daveclayton
+      changes:
+        - insert:
+            tableName: oauth_client
+            columns:
+              - column:
+                  name: id
+                  value: "12345678-1234-1234-1234-123456789012"
+              - column:
+                  name: secret
+                  value: ${ui-client-secret}
