@@ -1,0 +1,29 @@
+meta {
+  name: Login
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/auth/signin
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "tester",
+    "password": "test123",
+    "clientId": "{{clientId}}",
+    "clientSecret": "{{clientSecret}}"
+  }
+}
+
+vars:pre-request {
+  clientSecret: {{process.env.clientSecret}}
+  clientId: 12345678-1234-1234-1234-123456789012
+}
+
+settings {
+  encodeUrl: true
+}
