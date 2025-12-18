@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.terabudget.api.domain.OAuthRefreshToken;
@@ -17,7 +18,7 @@ import org.terabudget.api.model.authentication.AuthResponse;
 import org.terabudget.api.model.authentication.LoginRequest;
 import org.terabudget.api.model.authentication.TokenRefreshRequest;
 import org.terabudget.api.repository.OAuthClientRepository;
-import org.terabudget.api.repository.UserRepository;
+import org.terabudget.api.repository.BudgetUserRepository;
 import org.terabudget.api.util.JwtSupport;
 
 import io.jsonwebtoken.Claims;
@@ -37,11 +38,14 @@ public class AuthService {
     private OAuthRefreshTokenService refreshTokenService;
     @Autowired
     private OAuthClientRepository oAuthClientRepository;
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
+    private BudgetUserRepository userRepository;
+    @Autowired
     private UserDetailsFactory userDetailsFactory;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Do the Spring Security authentication.
@@ -63,11 +67,16 @@ public class AuthService {
      */
     public AuthResponse authenticate(LoginRequest loginRequest, HttpServletRequest httpServletRequest) {
         OAuthClient oAuthClient = oAuthClientRepository
-                .findByIdAndSecret(loginRequest.getClientId(), loginRequest.getClientSecret())
+                .findByClientIdAndSecret(loginRequest.getClientId(), loginRequest.getClientSecret())
                 .orElseThrow(() -> new OAuthCLientNotFoundException(loginRequest.getClientId()));
 
-        BudgetUser user = userRepository.findByUsername(loginRequest.getUsername())
+        BudgetUser user = userRepository
+                .findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new UserNotFoundException(loginRequest.getUsername()));
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new UserNotFoundException(loginRequest.getUsername());
+        }
 
         String refreshToken = refreshTokenService
                 .createRefreshToken(user, oAuthClient);

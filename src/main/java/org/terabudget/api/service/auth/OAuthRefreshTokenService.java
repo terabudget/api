@@ -13,7 +13,7 @@ import org.terabudget.api.domain.BudgetUser;
 import org.terabudget.api.domain.OAuthClient;
 import org.terabudget.api.exception.TokenRefreshException;
 import org.terabudget.api.repository.OAuthRefreshTokenRepository;
-import org.terabudget.api.repository.UserRepository;
+import org.terabudget.api.repository.BudgetUserRepository;
 import org.terabudget.api.util.JwtSupport;
 
 import io.jsonwebtoken.Claims;
@@ -36,7 +36,7 @@ public class OAuthRefreshTokenService {
     private OAuthRefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private BudgetUserRepository userRepository;
 
     /**
      * Validate a refresh token.
@@ -99,7 +99,7 @@ public class OAuthRefreshTokenService {
 
         refreshTokenRepository.save(refreshToken);
 
-        return jwtSupport.createJwt(user,
+        return jwtSupport.createJwt(user.getUsername(),
                 Map.of(ClaimKeys.REFRESH_PAYLOAD_CLAIM_KEY.getKey(), payload,
                         ClaimKeys.APPLICATION_ID_CLAIM_KEY.getKey(), oAuthClient.getId()),
                 refreshTokenDurationMs);

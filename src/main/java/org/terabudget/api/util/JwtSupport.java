@@ -48,12 +48,12 @@ public class JwtSupport {
      * @param durationMs
      * @return
      */
-    public String createJwt(BudgetUser user, Map<String, Object> claims, long durationMs) {
+    public String createJwt(String subject, Map<String, Object> claims, long durationMs) {
         return Jwts.builder()
                 .claims(claims)
                 .expiration(Date.from(Instant.now().plusMillis(durationMs)))
                 .issuedAt(new Date())
-                .subject(user.getUsername())
+                .subject(subject)
                 .signWith(secretKey)
                 .compact();
     }

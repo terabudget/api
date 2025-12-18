@@ -23,5 +23,6 @@ public class OAuthClient {
     @GeneratedValue(generator = "uuid")
     private String id;
 
+    private String clientId;
     private String secret;
 }

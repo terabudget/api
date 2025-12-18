@@ -1,8 +1,10 @@
 package org.terabudget.api.domain;
 
-import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,13 +33,14 @@ public class BudgetUser {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "budget_user_role", joinColumns = @JoinColumn(name = "budget_user_id"), inverseJoinColumns = @JoinColumn(name = "budget_role_id"))
-    @Builder.Default
-    private Set<BudgetRole> roles = new HashSet<>();
+    private Set<BudgetRole> roles;
 
     private String username;
 
+    @Nullable
     private String email;
 
+    @JsonIgnore
     private String password;
 
     private boolean enabled;

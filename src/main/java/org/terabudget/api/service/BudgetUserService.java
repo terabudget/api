@@ -6,14 +6,14 @@ import org.terabudget.api.domain.BudgetUser;
 import org.terabudget.api.exception.DuplicateUserException;
 import org.terabudget.api.factory.UserFactory;
 import org.terabudget.api.model.authentication.LoginRequest;
-import org.terabudget.api.repository.UserRepository;
+import org.terabudget.api.repository.BudgetUserRepository;
 
 @Service
-public class UserService {
+public class BudgetUserService  {
     @Autowired
     private UserFactory userFactory;
     @Autowired
-    private UserRepository userRepository;
+    private BudgetUserRepository userRepository;
 
     public BudgetUser createUser(LoginRequest loginRequest) {
         if (userRepository.existsByUsername(loginRequest.getUsername())) {
@@ -24,4 +24,6 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+
 }

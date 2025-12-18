@@ -40,25 +40,25 @@ public class AuthControllerAdvice {
 
     @ExceptionHandler(InsufficientAuthenticationException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ApiError> handleTokenRefreshException(InsufficientAuthenticationException ex) {
-        return responseEntityFactory.errorResponse(ex, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ApiError> handleInsufficientAuthenticationException(InsufficientAuthenticationException ex) {
+        return responseEntityFactory.errorResponse(ex, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(TokenValidationException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ApiError> handleTokenValidationException(TokenValidationException ex) {
-        return responseEntityFactory.errorResponse(ex, HttpStatus.FORBIDDEN);
+        return responseEntityFactory.errorResponse(ex, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ApiError> handleUserNotFoundException(UserNotFoundException ex) {
-        return responseEntityFactory.errorResponse(ex, HttpStatus.FORBIDDEN);
+        return responseEntityFactory.errorResponse(ex, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(OAuthCLientNotFoundException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ApiError> OAuthCLientNotFoundException(OAuthCLientNotFoundException ex) {
-        return responseEntityFactory.errorResponse(ex, HttpStatus.FORBIDDEN);
+        return responseEntityFactory.errorResponse(ex, HttpStatus.UNAUTHORIZED);
     }
 }
