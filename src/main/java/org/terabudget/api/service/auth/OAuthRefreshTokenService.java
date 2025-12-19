@@ -1,22 +1,25 @@
 package org.terabudget.api.service.auth;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.Date;
 import java.util.UUID;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.terabudget.api.domain.OAuthRefreshToken;
 import org.terabudget.api.domain.BudgetUser;
 import org.terabudget.api.domain.OAuthClient;
+import org.terabudget.api.domain.OAuthRefreshToken;
+import org.terabudget.api.exception.OAuthCLientNotFoundException;
 import org.terabudget.api.exception.TokenRefreshException;
-import org.terabudget.api.repository.OAuthRefreshTokenRepository;
+import org.terabudget.api.exception.UserNotFoundException;
+import org.terabudget.api.model.auth.RefreshTokenValidationResult;
+import org.terabudget.api.model.auth.TokenRefreshRequest;
 import org.terabudget.api.repository.BudgetUserRepository;
-import org.terabudget.api.util.JwtSupport;
-
-import io.jsonwebtoken.Claims;
+import org.terabudget.api.repository.OAuthClientRepository;
+import org.terabudget.api.repository.OAuthRefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,17 +29,44 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class OAuthRefreshTokenService {
-    @Value("${org.terabudget.authentication.refreshTokenExpirationMs}")
-    private Long refreshTokenDurationMs;
+    private static final String PART_SEPARATOR = ".";
+    private static final String PART_SEPARATOR_REGEX = "[.]{1,}";
+    private static final short EXPECTED_PARTS = 2;
+    private static final short TOKEN_ID_POSITION = 0;
+    private static final short TOKEN_PAYLOAD_POSITION = 1;
+    private static final String REFRESH_TOKEN_FORMAT = "%s%s%s";
 
-    @Autowired
-    private JwtSupport jwtSupport;
+    @Value("${org.terabudget.authentication.refreshTokenExpirationMs}")
+    private int refreshTokenExpirationMs;
 
     @Autowired
     private OAuthRefreshTokenRepository refreshTokenRepository;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private OAuthClientRepository oAuthClientRepository;
+
+    @Autowired
     private BudgetUserRepository userRepository;
+
+    public OAuthRefreshToken getToken(String token, String clientId) {
+        String[] parts = token.split(PART_SEPARATOR_REGEX);
+        if (EXPECTED_PARTS != parts.length) {
+            throw new TokenRefreshException(token,
+                    clientId);
+        }
+
+        OAuthRefreshToken refreshToken = refreshTokenRepository
+                .findByIdAndClientId(parts[TOKEN_ID_POSITION], clientId)
+                .orElseThrow(() -> new TokenRefreshException(token, "Refresh token not found"));
+
+        if (!passwordEncoder.matches(parts[TOKEN_PAYLOAD_POSITION], refreshToken.getPayload())) {
+            throw new TokenRefreshException(token, clientId);
+        }
+        return refreshToken;
+    }
 
     /**
      * Validate a refresh token.
@@ -45,84 +75,71 @@ public class OAuthRefreshTokenService {
      * @param clientId
      * @return
      */
-    public OAuthRefreshToken validateRefreshToken(String token) {
-        Claims claims = jwtSupport.parseToken(token);
+    public RefreshTokenValidationResult validateRefreshRequest(TokenRefreshRequest refreshRequest) {
 
-        String payload = claims.get(ClaimKeys.REFRESH_PAYLOAD_CLAIM_KEY.getKey(), String.class);
-        String clientId = claims.get(ClaimKeys.APPLICATION_ID_CLAIM_KEY.getKey(), String.class);
+        OAuthRefreshToken refreshToken = getToken(refreshRequest.getRefreshToken(), refreshRequest.getClientId());
+        OAuthClient client = oAuthClientRepository
+                .findByClientIdAndSecret(refreshRequest.getClientId(), refreshRequest.getClientSecret())
+                .orElseThrow(() -> new OAuthCLientNotFoundException(refreshRequest.getClientId()));
 
-        OAuthRefreshToken refreshToken = refreshTokenRepository
-                .findByPayloadAndOAuthClientId(payload, clientId)
-                .orElseThrow(() -> new TokenRefreshException(token, "Refresh token not found"));
-
-        if (!refreshToken.getUser().isEnabled()) {
-            log.info("User {} is disabled", refreshToken.getUser().getUsername());
-            throw new TokenRefreshException(token, "User is disabled");
-        }
+        BudgetUser user = userRepository
+                .findById(refreshToken.getBudgetUserId())
+                .orElseThrow(() -> new UserNotFoundException(refreshToken.getBudgetUserId()));
 
         if (refreshToken.getExpirationDate().isBefore(Instant.now())) {
-            throw new TokenRefreshException(token, "Refresh token in the database has expired");
+            throw new TokenRefreshException(refreshRequest.getRefreshToken(),
+                    "Refresh token in the database has expired");
         }
-        return refreshToken;
+        return RefreshTokenValidationResult.builder()
+                .budgetUser(user)
+                .client(client)
+                .build();
     }
 
     /**
-     * Create a refresh token from an existing refresh token.
+     * Deletes any existing refresh tokens for an existing refres token, and create
+     * a new once.
      * 
      * @param refreshToken
      * @return
      */
-    public String createRefreshToken(OAuthRefreshToken refreshToken) {
-        return createRefreshToken(refreshToken.getUser(), refreshToken.getOAuthClient());
+    public String createRefreshToken(RefreshTokenValidationResult validationResult) {
+        return createRefreshToken(validationResult.getBudgetUser().getId(), validationResult.getClient().getClientId());
     }
 
     /**
-     * Create a refresh token.
+     * Deletes any existing refresh tokens for the user + client, and create a new
+     * once.
      *
      * @param user
      * @param clientId
      * @return
      */
     @Transactional
-    public String createRefreshToken(BudgetUser user, OAuthClient oAuthClient) {
-        refreshTokenRepository.deleteByUserAndOAuthClientId(user, oAuthClient.getId());
+    public String createRefreshToken(String userId, String clientId) {
+        refreshTokenRepository.deleteByBudgetUserIdAndClientId(userId, clientId);
 
         String payload = UUID.randomUUID().toString();
+        String encryptedPayload = passwordEncoder.encode(payload);
 
         OAuthRefreshToken refreshToken = OAuthRefreshToken
                 .builder()
-                .user(user)
-                .oAuthClient(oAuthClient)
-                .expirationDate(Instant.now().plusMillis(refreshTokenDurationMs))
-                .payload(payload)
+                .budgetUserId(userId)
+                .clientId(clientId)
+                .expirationDate(DateUtils.addMilliseconds(new Date(), refreshTokenExpirationMs).toInstant())
+                .payload(encryptedPayload)
                 .build();
 
-        refreshTokenRepository.save(refreshToken);
+        OAuthRefreshToken saved = refreshTokenRepository.save(refreshToken);
 
-        return jwtSupport.createJwt(user.getUsername(),
-                Map.of(ClaimKeys.REFRESH_PAYLOAD_CLAIM_KEY.getKey(), payload,
-                        ClaimKeys.APPLICATION_ID_CLAIM_KEY.getKey(), oAuthClient.getId()),
-                refreshTokenDurationMs);
-    }
-
-    /**
-     * Delete refresh tokens by user and application ID.
-     *
-     * @param username
-     * @param clientId
-     * @return
-     */
-    @Transactional
-    public int deleteByUserAndApplication(String username, String clientId) {
-        return refreshTokenRepository.deleteByUserAndOAuthClientId(userRepository.findByUsername(username).get(),
-                clientId);
+        return REFRESH_TOKEN_FORMAT.formatted(saved.getId(), PART_SEPARATOR, payload);
     }
 
     /**
      * Periodically delete all expired refresh tokens from the database.
      */
     @Transactional
-    @Scheduled(fixedDelay = 1000)
+    // @Scheduled(fixedDelay = 1000)
     public void deleteAllExpired() {
         int deletedCount = refreshTokenRepository.deleteAllWithExpiredDateBefore(Instant.now());
         log.info("Deleted {} expired refresh tokens", deletedCount);

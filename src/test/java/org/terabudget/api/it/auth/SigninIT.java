@@ -1,8 +1,12 @@
 package org.terabudget.api.it.auth;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,28 +17,35 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.terabudget.api.domain.BudgetRole;
 import org.terabudget.api.domain.BudgetUser;
 import org.terabudget.api.it.utils.IntegrationTestSupport;
-import org.terabudget.api.model.authentication.LoginRequest;
+import org.terabudget.api.model.auth.AuthResponse;
+import org.terabudget.api.model.auth.BuiltInRoleUrn;
+import org.terabudget.api.model.auth.LoginRequest;
 
-import jakarta.transaction.Transactional;
-
+import org.terabudget.api.repository.BudgetRoleRepository;
 import org.terabudget.api.repository.BudgetUserRepository;
+import org.terabudget.api.util.JwtSupport;
+
+import io.jsonwebtoken.Claims;
 
 /**
- * Integration tests for authentication and authorisation.
+ * Integration tests for signing in.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
-@Transactional
 public class SigninIT {
 
     private static final String USER_NAME = UUID.randomUUID().toString();
     private static final String USER_PASSWORD = UUID.randomUUID().toString();
 
+    private static final String ROLE_ASSIGNED_USER_NAME = UUID.randomUUID().toString();
+    private static final String ROLE_ASSIGNED_USER_PASSWORD = UUID.randomUUID().toString();
+
     @Value("${spring.liquibase.parameters.ui-client-id}")
-    private String oAuthClientId;
+    private String clientId;
 
     @Value("${spring.liquibase.parameters.ui-client-secret}")
     private String oAuthClientSecret;
@@ -43,33 +54,66 @@ public class SigninIT {
     private BudgetUserRepository userRepository;
 
     @Autowired
+    private BudgetRoleRepository roleRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private BudgetUser budgetUser;
+    private BudgetUser noRolesUser;
+    private BudgetUser rolesUser;
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private JwtSupport jwtSupport;
+
     @BeforeEach
     public void setup() throws Exception {
+        BudgetRole role = roleRepository.findByUrn(BuiltInRoleUrn.ACCOUNT_CREATE_ANY.getUrn()).get();
+
         userRepository.deleteAll();
-        budgetUser = BudgetUser.builder()
+        noRolesUser = BudgetUser.builder()
                 .username(USER_NAME)
                 .password(passwordEncoder.encode(USER_PASSWORD))
                 .build();
-        userRepository.save(budgetUser);
+
+        rolesUser = BudgetUser.builder()
+                .username(ROLE_ASSIGNED_USER_NAME)
+                .password(passwordEncoder.encode(ROLE_ASSIGNED_USER_PASSWORD))
+                .roles(Set.of(role))
+                .build();
+
+        userRepository.saveAll(List.of(rolesUser, noRolesUser));
     }
 
     @Test
-    public void signin_success() throws Exception {
+    public void signin_whenRoles_thenClaimsAdded() throws Exception {
+        AuthResponse authResponse = IntegrationTestSupport.doSuccessfulLogin(mockMvc, LoginRequest.builder()
+                .clientId(clientId)
+                .clientSecret(oAuthClientSecret)
+                .username(ROLE_ASSIGNED_USER_NAME)
+                .password(ROLE_ASSIGNED_USER_PASSWORD)
+                .build());
 
-        IntegrationTestSupport.doLogin(mockMvc, LoginRequest.builder()
-                .clientId(oAuthClientId)
+        assertNotNull(authResponse.getRefreshToken());
+
+        Claims claims = jwtSupport.parseToken(authResponse.getAccessToken());
+        assertTrue(claims.containsKey(BuiltInRoleUrn.ACCOUNT_CREATE_ANY.getUrn()));
+    }
+
+    @Test
+    public void signin_whenNoRoles_thenSuccess() throws Exception {
+
+        AuthResponse authResponse = IntegrationTestSupport.doSuccessfulLogin(mockMvc, LoginRequest.builder()
+                .clientId(clientId)
                 .clientSecret(oAuthClientSecret)
                 .username(USER_NAME)
                 .password(USER_PASSWORD)
-                .build())
-                .andExpect(status().isOk());
+                .build());
+
+        assertNotNull(authResponse.getAccessToken());
+        assertNotNull(authResponse.getRefreshToken());
     }
 
     @Test
@@ -95,7 +139,7 @@ public class SigninIT {
     public void signin_whenBadClientSecret_thenUnauthorised() throws Exception {
         IntegrationTestSupport.doLogin(mockMvc, LoginRequest.builder()
                 .clientSecret("as")
-                .clientId(oAuthClientId)
+                .clientId(clientId)
                 .username(USER_NAME)
                 .password(USER_PASSWORD)
                 .build())
@@ -117,7 +161,7 @@ public class SigninIT {
     public void signin_whenBadUsername_thenUnauthorised() throws Exception {
         IntegrationTestSupport.doLogin(mockMvc, LoginRequest.builder()
                 .clientSecret(oAuthClientSecret)
-                .clientId(oAuthClientId)
+                .clientId(clientId)
                 .username("as")
                 .password(USER_PASSWORD)
                 .build())
@@ -128,7 +172,7 @@ public class SigninIT {
     public void signin_whenBadPassword_thenUnauthorised() throws Exception {
         IntegrationTestSupport.doLogin(mockMvc, LoginRequest.builder()
                 .clientSecret(oAuthClientSecret)
-                .clientId(oAuthClientId)
+                .clientId(clientId)
                 .username(USER_NAME)
                 .password("as")
                 .build())

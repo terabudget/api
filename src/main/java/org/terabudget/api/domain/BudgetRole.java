@@ -25,6 +25,17 @@ public class BudgetRole {
 
     @Getter
     @Setter
+    private String urn;
+
+    @Getter
+    @Setter
     private String description;
 
+    @Getter
+    @Setter
+    private String context;
+
+    @Getter
+    @Setter
+    private boolean builtIn;
 }

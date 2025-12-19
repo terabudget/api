@@ -18,7 +18,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: oauth_client_id
+                  name: client_id
                   type: CHAR(36)
                   constraints:
                     nullable: false

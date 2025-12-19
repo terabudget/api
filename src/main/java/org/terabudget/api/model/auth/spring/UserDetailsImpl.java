@@ -1,4 +1,4 @@
-package org.terabudget.api.model.authentication.spring;
+package org.terabudget.api.model.auth.spring;
 
 import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;

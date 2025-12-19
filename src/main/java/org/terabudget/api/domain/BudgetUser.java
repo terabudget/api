@@ -5,6 +5,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -35,6 +36,7 @@ public class BudgetUser {
     @JoinTable(name = "budget_user_role", joinColumns = @JoinColumn(name = "budget_user_id"), inverseJoinColumns = @JoinColumn(name = "budget_role_id"))
     private Set<BudgetRole> roles;
 
+    @Column(unique = true)
     private String username;
 
     @Nullable

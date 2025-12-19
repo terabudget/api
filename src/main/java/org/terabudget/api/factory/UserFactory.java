@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.terabudget.api.domain.BudgetUser;
-import org.terabudget.api.model.authentication.LoginRequest;
+import org.terabudget.api.model.auth.LoginRequest;
 
 @Component
 public class UserFactory {

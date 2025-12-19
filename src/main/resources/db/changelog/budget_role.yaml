@@ -14,9 +14,43 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: name
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: urn
                   type: VARCHAR(255)
                   constraints:
+                    unique: true
                     nullable: false
               - column:
                   name: description
                   type: VARCHAR(255)
+              - column:
+                  name: context
+                  type: VARCHAR(255)
+              - column:
+                  name: built_in
+                  type: boolean
+  - changeSet:
+      id: budget-role-create-built-in-001
+      author: https://github.com/daveclayton
+      changes:
+        - insert:
+            tableName: budget_role
+            columns:
+              - column:
+                  name: id
+                  value: "12345678-1234-1234-1234-123456789012"
+              - column:
+                  name: name
+                  value: Create any account (Built in)
+              - column:
+                  name: urn
+                  value: "urn:org.terabudget:builtin:rbac:role:account_create_any"
+              - column:
+                  name: description
+                  value: "Role members can create accounts"
+              - column:
+                  name: built_in
+                  value: true

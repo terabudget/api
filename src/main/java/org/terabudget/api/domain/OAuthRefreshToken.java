@@ -6,8 +6,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,13 +24,9 @@ public class OAuthRefreshToken {
     @GeneratedValue(generator = "uuid")
     private String id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    private BudgetUser user;
+    private String budgetUserId;
 
-    @OneToOne
-    @JoinColumn(name = "oauth_client_id", referencedColumnName = "id", nullable = false)
-    private OAuthClient oAuthClient;
+    private String clientId;
 
     @Column(nullable = false, unique = true)
     private String payload;

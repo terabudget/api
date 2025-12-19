@@ -7,9 +7,4 @@ import org.terabudget.api.domain.BudgetUser;
 
 public interface BudgetUserRepository extends JpaRepository<BudgetUser, String> {
     Optional<BudgetUser> findByUsername(String username);
-
-    boolean existsByUsername(String username);
-
-    boolean existsByEmail(String email);
-
 }

@@ -19,9 +19,9 @@ public class UserControllerAdvice {
     private ResponseEntityFactory responseEntityFactory;
 
     @ExceptionHandler(DuplicateUserException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiError> handleDuplicateUserException(DuplicateUserException ex, HttpStatus status) {
-        return responseEntityFactory.errorResponse(ex, HttpStatus.BAD_REQUEST);
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ApiError> handleDuplicateUserException(DuplicateUserException ex) {
+        return responseEntityFactory.errorResponse(ex, HttpStatus.CONFLICT);
     }
 
 }

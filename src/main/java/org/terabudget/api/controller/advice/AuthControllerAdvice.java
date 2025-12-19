@@ -33,9 +33,9 @@ public class AuthControllerAdvice {
      * @return
      */
     @ExceptionHandler(TokenRefreshException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ApiError> handleTokenRefreshException(TokenRefreshException ex) {
-        return responseEntityFactory.errorResponse(ex, HttpStatus.FORBIDDEN);
+        return responseEntityFactory.errorResponse(ex, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(InsufficientAuthenticationException.class)

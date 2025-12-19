@@ -8,17 +8,16 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.terabudget.api.domain.OAuthRefreshToken;
-import org.terabudget.api.domain.BudgetUser;
 
 @Repository
 public interface OAuthRefreshTokenRepository extends JpaRepository<OAuthRefreshToken, String> {
 
-    Optional<OAuthRefreshToken> findByPayloadAndOAuthClientId(String payload, String oAuthClientId);
+    Optional<OAuthRefreshToken> findByIdAndClientId(String id, String clientId);
 
-    Optional<OAuthRefreshToken> findByUserUsernameAndOAuthClientId(String username, String oAuthClientId);
+    Optional<OAuthRefreshToken> findByBudgetUserIdAndClientId(String username, String clientId);
 
     @Modifying
-    int deleteByUserAndOAuthClientId(BudgetUser user, String oAuthClientId);
+    int deleteByBudgetUserIdAndClientId(String budgetUserId, String clientId);
 
     @Modifying
     @Query("delete from OAuthRefreshToken r where r.expirationDate <= :expirationDate")

@@ -1,4 +1,4 @@
-package org.terabudget.api.spring.security.service;
+package org.terabudget.api.service.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

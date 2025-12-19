@@ -1,13 +1,15 @@
 package org.terabudget.api.util;
 
-import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.crypto.SecretKey;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.terabudget.api.domain.BudgetRole;
 import org.terabudget.api.domain.BudgetUser;
 import org.terabudget.api.exception.TokenValidationException;
 
@@ -24,20 +26,22 @@ public class JwtSupport {
     private JwtParser jwtParser;
 
     /**
-     * Shorthand method for creating a JWT with duration.
+     * Shorthand method for creating a JWT with duration from a user, including the
+     * roles in the claims.
      * 
      * @param user
      * @param claims
      * @param durationMs
      * @return
      */
-    public String createJwt(BudgetUser user, long durationMs) {
-        return Jwts.builder()
-                .expiration(Date.from(Instant.now().plusMillis(durationMs)))
-                .issuedAt(new Date())
-                .subject(user.getUsername())
-                .signWith(secretKey)
-                .compact();
+    public String createAccessToken(BudgetUser user, int durationMs) {
+        Map<String, Object> claims = new HashMap<>();
+        if (user.getRoles() != null) {
+            for (BudgetRole role : user.getRoles()) {
+                claims.put(role.getUrn(), true);
+            }
+        }
+        return createJwt(user.getUsername(), claims, durationMs);
     }
 
     /**
@@ -48,10 +52,11 @@ public class JwtSupport {
      * @param durationMs
      * @return
      */
-    public String createJwt(String subject, Map<String, Object> claims, long durationMs) {
+    public String createJwt(String subject, Map<String, Object> claims, int durationMs) {
+
         return Jwts.builder()
                 .claims(claims)
-                .expiration(Date.from(Instant.now().plusMillis(durationMs)))
+                .expiration(DateUtils.addMilliseconds(new Date(), durationMs))
                 .issuedAt(new Date())
                 .subject(subject)
                 .signWith(secretKey)
@@ -90,9 +95,5 @@ public class JwtSupport {
         }
         checkTokenExpiry(token, claims);
         return claims;
-    }
-
-    public String getSpringRoleForClaim(String claimName) {
-        return "ROLE_" + claimName.toUpperCase().replace(":", "_").replace("-", "_");
     }
 }

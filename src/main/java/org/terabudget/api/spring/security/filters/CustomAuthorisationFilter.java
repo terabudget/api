@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.terabudget.api.exception.TokenValidationException;
-import org.terabudget.api.spring.security.service.CustomUserDetailsService;
+import org.terabudget.api.service.auth.CustomUserDetailsService;
 import org.terabudget.api.util.JwtSupport;
 
 import jakarta.servlet.FilterChain;
@@ -30,7 +30,8 @@ public class CustomAuthorisationFilter extends OncePerRequestFilter {
         try {
             // Exclude specific paths from the filter chain, e.g., login, token validation.
             if (request.getServletPath().equalsIgnoreCase("/api/auth/signin") ||
-                    request.getServletPath().equalsIgnoreCase("/api/auth/signup")) {
+                    request.getServletPath().equalsIgnoreCase("/api/auth/signup") ||
+                    request.getServletPath().equalsIgnoreCase("/api/auth/refresh-token")) {
                 filterChain.doFilter(request, response);
             } else {
                 String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);

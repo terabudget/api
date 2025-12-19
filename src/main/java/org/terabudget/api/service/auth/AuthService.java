@@ -8,15 +8,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
-import org.terabudget.api.domain.OAuthRefreshToken;
 import org.terabudget.api.domain.BudgetUser;
 import org.terabudget.api.domain.OAuthClient;
 import org.terabudget.api.exception.OAuthCLientNotFoundException;
 import org.terabudget.api.exception.UserNotFoundException;
 import org.terabudget.api.factory.UserDetailsFactory;
-import org.terabudget.api.model.authentication.AuthResponse;
-import org.terabudget.api.model.authentication.LoginRequest;
-import org.terabudget.api.model.authentication.TokenRefreshRequest;
+import org.terabudget.api.model.auth.AuthResponse;
+import org.terabudget.api.model.auth.LoginRequest;
+import org.terabudget.api.model.auth.RefreshTokenValidationResult;
+import org.terabudget.api.model.auth.TokenRefreshRequest;
 import org.terabudget.api.repository.OAuthClientRepository;
 import org.terabudget.api.repository.BudgetUserRepository;
 import org.terabudget.api.util.JwtSupport;
@@ -30,7 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 public class AuthService {
     @Value("${org.terabudget.authentication.accessTokenExpirationMs}")
-    private Long accessTokenExpirationMs;
+    private int accessTokenExpirationMs;
     @Autowired
     private JwtSupport jwtSupport;
 
@@ -79,17 +79,13 @@ public class AuthService {
         }
 
         String refreshToken = refreshTokenService
-                .createRefreshToken(user, oAuthClient);
+                .createRefreshToken(user.getId(), oAuthClient.getClientId());
 
-        String accessToken = jwtSupport.createJwt(user, accessTokenExpirationMs);
-
-        UserDetails userDetails = userDetailsFactory.create(user);
-        authenticateWithSpring(userDetails, httpServletRequest);
+        String accessToken = jwtSupport.createAccessToken(user, accessTokenExpirationMs);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .user(user)
                 .build();
     }
 
@@ -110,14 +106,13 @@ public class AuthService {
      * Authenticate for a refresh token.
      */
     public AuthResponse refresh(TokenRefreshRequest tokenRefreshRequest, HttpServletRequest httpServletRequest) {
-        OAuthRefreshToken refreshToken = refreshTokenService
-                .validateRefreshToken(tokenRefreshRequest.getRefreshToken());
 
-        String accessToken = jwtSupport.createJwt(refreshToken.getUser(), accessTokenExpirationMs);
-        String newRefreshToken = refreshTokenService.createRefreshToken(refreshToken);
+        RefreshTokenValidationResult tokenValidationResult = refreshTokenService
+                .validateRefreshRequest(tokenRefreshRequest);
 
-        UserDetails userDetails = userDetailsFactory.create(refreshToken.getUser());
-        authenticateWithSpring(userDetails, httpServletRequest);
+        String accessToken = jwtSupport.createAccessToken(tokenValidationResult.getBudgetUser(),
+                accessTokenExpirationMs);
+        String newRefreshToken = refreshTokenService.createRefreshToken(tokenValidationResult);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
