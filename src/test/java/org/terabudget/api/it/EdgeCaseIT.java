@@ -1,34 +1,31 @@
 package org.terabudget.api.it;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Integration tests for edge cases
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureRestTestClient
-@TestPropertySource(locations = "classpath:application-integrationtest.properties")
-class EdgeCaseIT {
+@AutoConfigureMockMvc
 
-    @LocalServerPort
-    private int port;
+@TestPropertySource(locations = "classpath:application-integrationtest.properties")
+public class EdgeCaseIT {
 
     @Autowired
-    private RestTestClient restTestClient;
+    private MockMvc mockMvc;
 
     @Test
-    public void rootUrl_whenPost_thenUnauthorised() {
-        restTestClient.post()
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.UNAUTHORIZED);
+    public void rootUrl_whenPost_thenUnauthorised() throws Exception {
+        mockMvc.perform(post("/"))
+                .andExpect(status().isForbidden());
     }
 
 }

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
+import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import org.terabudget.api.repository.BudgetUserRepository;
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class SignupIT {
 
-    private static final String USER_NAME = UUID.randomUUID().toString();
+    private static final String USER_NAME = Instancio.gen().string().length(20).get();
     private static final String USER_PASSWORD = UUID.randomUUID().toString();
 
     @Value("${spring.liquibase.parameters.ui-client-id}")

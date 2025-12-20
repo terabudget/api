@@ -8,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +40,18 @@ import io.jsonwebtoken.Claims;
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class SigninIT {
 
-    private static final String USER_NAME = UUID.randomUUID().toString();
+    private static final String USER_NAME = Instancio.gen()
+            .string()
+            .minLength(1)
+            .maxLength(20)
+            .get();
     private static final String USER_PASSWORD = UUID.randomUUID().toString();
 
-    private static final String ROLE_ASSIGNED_USER_NAME = UUID.randomUUID().toString();
+    private static final String ROLE_ASSIGNED_USER_NAME = Instancio.gen()
+            .string()
+            .minLength(1)
+            .maxLength(20)
+            .get();
     private static final String ROLE_ASSIGNED_USER_PASSWORD = UUID.randomUUID().toString();
 
     @Value("${spring.liquibase.parameters.ui-client-id}")
@@ -174,8 +184,19 @@ public class SigninIT {
                 .clientSecret(oAuthClientSecret)
                 .clientId(clientId)
                 .username(USER_NAME)
-                .password("as")
+                .password("1234567890")
                 .build())
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void signin_whenPasswordTooShort_thenUnauthorised() throws Exception {
+        IntegrationTestSupport.doLogin(mockMvc, LoginRequest.builder()
+                .clientSecret(oAuthClientSecret)
+                .clientId(clientId)
+                .username(USER_NAME)
+                .password("as")
+                .build())
+                .andExpect(status().isBadRequest());
     }
 }

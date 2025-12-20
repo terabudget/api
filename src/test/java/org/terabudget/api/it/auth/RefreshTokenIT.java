@@ -11,6 +11,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,16 +39,23 @@ import org.terabudget.api.repository.BudgetUserRepository;
 import org.terabudget.api.repository.OAuthRefreshTokenRepository;
 import org.terabudget.api.service.auth.OAuthRefreshTokenService;
 
+import jakarta.transaction.Transactional;
+
 /**
  * Integration tests for signing in.
  */
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class RefreshTokenIT {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String USER_NAME = UUID.randomUUID().toString();
+    private static final String USER_NAME = Instancio.gen()
+            .string()
+            .minLength(1)
+            .maxLength(20)
+            .get();
     private static final String USER_PASSWORD = UUID.randomUUID().toString();
 
     @Value("${spring.liquibase.parameters.ui-client-id}")
@@ -107,6 +116,7 @@ public class RefreshTokenIT {
                 clientId);
 
         refreshToken.setExpirationDate(Instant.now().minus(5, ChronoUnit.DAYS));
+        oAuthRefreshTokenRepository.save(refreshToken);
 
         // Allow the time to pass for the access token expiry to be different
         Thread.sleep(1000);
@@ -126,7 +136,6 @@ public class RefreshTokenIT {
 
     @Test
     public void refreshToken_whenCalled_thenSuccess() throws Exception {
-
         // Allow the time to pass for the access token expiry to be different
         Thread.sleep(1000);
 
