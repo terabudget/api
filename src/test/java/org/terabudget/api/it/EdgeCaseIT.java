@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class EdgeCaseIT {
 
@@ -23,7 +22,7 @@ public class EdgeCaseIT {
     private MockMvc mockMvc;
 
     @Test
-    public void rootUrl_whenPost_thenUnauthorised() throws Exception {
+    public void rootUrl_whenPost_thenForbidden() throws Exception {
         mockMvc.perform(post("/"))
                 .andExpect(status().isForbidden());
     }

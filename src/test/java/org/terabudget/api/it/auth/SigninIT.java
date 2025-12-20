@@ -81,19 +81,16 @@ public class SigninIT {
     @BeforeEach
     public void setup() throws Exception {
         BudgetRole role = roleRepository.findByUrn(BuiltInRoleUrn.ACCOUNT_CREATE_ANY.getUrn()).get();
-
         userRepository.deleteAll();
         noRolesUser = BudgetUser.builder()
                 .username(USER_NAME)
                 .password(passwordEncoder.encode(USER_PASSWORD))
                 .build();
-
         rolesUser = BudgetUser.builder()
                 .username(ROLE_ASSIGNED_USER_NAME)
                 .password(passwordEncoder.encode(ROLE_ASSIGNED_USER_PASSWORD))
                 .roles(Set.of(role))
                 .build();
-
         userRepository.saveAll(List.of(rolesUser, noRolesUser));
     }
 

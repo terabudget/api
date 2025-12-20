@@ -32,7 +32,7 @@ public class BudgetUser {
     @GeneratedValue(generator = "uuid")
     private String id;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "budget_user_role", joinColumns = @JoinColumn(name = "budget_user_id"), inverseJoinColumns = @JoinColumn(name = "budget_role_id"))
     private Set<BudgetRole> roles;
 

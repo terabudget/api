@@ -58,19 +58,7 @@ public class SignupIT {
 
     @Test
     public void signup_success() throws UnsupportedEncodingException, Exception {
-        String responseJSON = doSignup(LoginRequest.builder()
-                .clientId(clientId)
-                .clientSecret(oAuthClientSecret)
-                .username(USER_NAME)
-                .password(USER_PASSWORD)
-                .build())
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        AuthResponse authResponse = IntegrationTestSupport.getObjectMapper()
-                .readValue(responseJSON, AuthResponse.class);
+        AuthResponse authResponse = IntegrationTestSupport.doSuccessfulSignup(mockMvc, clientId, oAuthClientSecret);
 
         assertEquals(1, userRepository.findAll().size());
         assertNotNull(authResponse.getAccessToken());
