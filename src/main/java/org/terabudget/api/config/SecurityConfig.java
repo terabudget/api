@@ -1,4 +1,4 @@
-package org.terabudget.api.spring.security.config;
+package org.terabudget.api.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

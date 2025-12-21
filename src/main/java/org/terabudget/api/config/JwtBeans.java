@@ -1,4 +1,4 @@
-package org.terabudget.api.spring.security.config;
+package org.terabudget.api.config;
 
 import javax.crypto.SecretKey;
 

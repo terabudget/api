@@ -1,4 +1,4 @@
-package org.terabudget.api.it;
+package org.terabudget.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

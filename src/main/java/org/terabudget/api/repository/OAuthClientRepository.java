@@ -8,4 +8,6 @@ import org.terabudget.api.domain.OAuthClient;
 public interface OAuthClientRepository extends JpaRepository<OAuthClient, String> {
     Optional<OAuthClient> findByClientIdAndSecret(String clientId, String secret);
 
+    Optional<OAuthClient> findByClientId(String clientId);
+
 }
