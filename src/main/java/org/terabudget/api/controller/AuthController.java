@@ -16,6 +16,7 @@ import org.terabudget.api.service.BudgetUserService;
 import org.terabudget.api.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -56,4 +57,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.refresh(tokenRefreshRequest, httpServletRequest));
     }
 
+    @GetMapping("/token-valid")
+    public ResponseEntity<Object> getMethodName() {
+        return ResponseEntity.noContent().build();
+    }
 }

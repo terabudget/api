@@ -2,6 +2,7 @@ package org.terabudget.api.controller.advice;
 
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,4 +39,16 @@ public class ContentControllerAdvice {
         return responseEntityFactory.errorResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handle not found resources
+     *
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler({ MissingServletRequestParameterException.class })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiError> handleNotFound(Exception ex) {
+        log.error("err", ex);
+        return responseEntityFactory.errorResponse(ex, HttpStatus.NOT_FOUND);
+    }
 }

@@ -2,12 +2,12 @@ package org.terabudget.api.spring.security.filters;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.terabudget.api.exception.TokenValidationException;
 import org.terabudget.api.service.auth.CustomUserDetailsService;
 import org.terabudget.api.util.JwtSupport;
 
@@ -61,7 +61,7 @@ public class CustomAuthorisationFilter extends OncePerRequestFilter {
             }
         } catch (Exception ex) {
             log.error("Error occurred in CustomAuthorizationFilter. Cause: {}", ex);
-            throw new TokenValidationException();
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
 }
