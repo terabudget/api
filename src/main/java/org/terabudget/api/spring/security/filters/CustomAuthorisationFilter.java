@@ -8,25 +8,30 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.terabudget.api.config.CorsConfig;
 import org.terabudget.api.service.auth.CustomUserDetailsService;
 import org.terabudget.api.util.JwtSupport;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.jbosslog.JBossLog;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
-@JBossLog
+@Slf4j
 public class CustomAuthorisationFilter extends OncePerRequestFilter {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
     @Autowired
     private JwtSupport jwtSupport;
+    @Autowired
+    private CorsConfig config;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+
         try {
             // Exclude specific paths from the filter chain, e.g., login, token validation.
             if (request.getServletPath().equalsIgnoreCase("/api/auth/signin") ||

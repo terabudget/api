@@ -1,5 +1,7 @@
 package org.terabudget.api.config;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +14,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+import org.terabudget.api.spring.security.filters.CORSFilter;
 import org.terabudget.api.spring.security.filters.CustomAuthorisationFilter;
 
 @Configuration
@@ -21,8 +28,25 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthorisationFilter customAuthorisationFilter;
 
+        @Autowired
+    private CORSFilter corsFilter;
+
     @Autowired
     private UserDetailsService userDetailsService;
+    @Autowired
+    private CorsConfig config;
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowedOrigins(config.getAllowedOrigins());
+        corsConfiguration.setAllowedMethods(config.getAllowedMethods());
+        corsConfiguration.setAllowedHeaders(config.getAllowedHeaders());
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.setCorsConfigurations(Map.of("/**", corsConfiguration));
+        return source;
+
+    }
 
     /*
      * Main security configuration
@@ -31,6 +55,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors-> cors.configurationSource(corsConfigurationSource()))
                 // Disable CSRF (not needed for stateless JWT)
                 .csrf(csrf -> csrf.disable())
                 // Configure endpoint authorization
@@ -55,6 +80,7 @@ public class SecurityConfig {
                 // Set custom authentication provider
                 .authenticationProvider(authenticationProvider())
 
+                .addFilterBefore(corsFilter, CorsFilter.class)
                 // Add JWT filter before Spring Security's default filter
                 .addFilterBefore(customAuthorisationFilter,
                         UsernamePasswordAuthenticationFilter.class);
