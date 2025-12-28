@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: budget-user-role-001
+      author: https://github.com/daveclayton
+      changes:
+        - createTable:
+            tableName: budget_user_role
+            columns:
+              - column:
+                  name: budget_user_id
+                  type: CHAR(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: budget_role_id
+                  type: CHAR(36)
+                  constraints:
+                    nullable: false

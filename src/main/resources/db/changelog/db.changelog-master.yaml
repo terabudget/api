@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - include:
+      file: bank_account.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: bank_transaction.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: budget_role.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: budget_user.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: budget_user_role.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: oauth_client.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: oauth_refresh_token.yaml
+      relativeToChangelogFile: true

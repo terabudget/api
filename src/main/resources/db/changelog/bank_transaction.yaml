@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: bank-transaction-001
+      author: https://github.com/daveclayton
+      changes:
+        - createTable:
+            tableName: bank_transaction
+            columns:
+              - column:
+                  name: id
+                  type: CHAR(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: originating_bank_account_id
+                  type: CHAR(36)
+                  constraints:
+                    nullable: false
