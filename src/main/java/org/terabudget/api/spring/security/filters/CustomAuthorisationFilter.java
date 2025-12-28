@@ -8,7 +8,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.terabudget.api.config.CorsConfig;
 import org.terabudget.api.service.auth.CustomUserDetailsService;
 import org.terabudget.api.util.JwtSupport;
 
@@ -25,8 +24,6 @@ public class CustomAuthorisationFilter extends OncePerRequestFilter {
     private CustomUserDetailsService userDetailsService;
     @Autowired
     private JwtSupport jwtSupport;
-    @Autowired
-    private CorsConfig config;
 
 
     @Override
