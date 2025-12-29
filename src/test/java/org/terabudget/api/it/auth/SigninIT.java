@@ -125,13 +125,13 @@ public class SigninIT {
 
     @Test
     public void signin_whenNoBody_thenUnauthorised() throws Exception {
-        mockMvc.perform(post("/api/auth/signin"))
+        mockMvc.perform(post("/api/auth/sign-in"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void signin_whenWrongBodyType_thenUnauthorised() throws Exception {
-        mockMvc.perform(post("/api/auth/signin")
+        mockMvc.perform(post("/api/auth/sign-in")
                 .content("test"))
                 .andExpect(status().isBadRequest());
     }

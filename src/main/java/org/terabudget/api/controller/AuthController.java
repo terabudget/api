@@ -31,24 +31,22 @@ public class AuthController {
     @Autowired
     private BudgetUserService userService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(HttpServletRequest httpServletRequest,
-            @Valid @RequestBody LoginRequest signUpRequest) {
+    @PostMapping("/sign-up")
+    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody LoginRequest signUpRequest) {
 
         oAuthClientRepository
                 .findByClientIdAndSecret(signUpRequest.getClientId(), signUpRequest.getClientSecret())
                 .orElseThrow(() -> new OAuthCLientNotFoundException(signUpRequest.getClientId()));
 
         userService.createUser(signUpRequest);
-
-        return ResponseEntity.ok(authService.authenticate(signUpRequest, httpServletRequest));
+        return ResponseEntity.ok(authService.authenticate(signUpRequest));
 
     }
 
-    @PostMapping("/signin")
+    @PostMapping("/sign-in")
     public ResponseEntity<AuthResponse> signin(HttpServletRequest httpServletRequest,
             @Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.authenticate(loginRequest, httpServletRequest));
+        return ResponseEntity.ok(authService.authenticate(loginRequest));
     }
 
     @PostMapping("/refresh-token")

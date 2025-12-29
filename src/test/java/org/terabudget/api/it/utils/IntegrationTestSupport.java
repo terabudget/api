@@ -77,7 +77,7 @@ public final class IntegrationTestSupport {
      */
     public static ResultActions doLogin(MockMvc mockMvc, LoginRequest request) throws Exception {
         String requestJson = objectMapper.writeValueAsString(request);
-        return mockMvc.perform(post("/api/auth/signin")
+        return mockMvc.perform(post("/api/auth/sign-in")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson));
     }

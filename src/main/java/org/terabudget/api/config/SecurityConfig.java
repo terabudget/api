@@ -28,7 +28,7 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthorisationFilter customAuthorisationFilter;
 
-        @Autowired
+    @Autowired
     private CORSFilter corsFilter;
 
     @Autowired
@@ -55,13 +55,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors-> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Disable CSRF (not needed for stateless JWT)
                 .csrf(csrf -> csrf.disable())
                 // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
-                        .requestMatchers("/api/auth/signup", "/api/auth/signin", "/api/auth/refresh-token").permitAll()
+                        .requestMatchers("/actuator", "/actuator/**", "/api/auth/sign-up", "/api/auth/sign-in",
+                                "/api/auth/refresh-token")
+                        .permitAll()
 
                         // Role-based endpoints
                         .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")

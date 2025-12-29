@@ -25,14 +25,14 @@ public class CustomAuthorisationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtSupport jwtSupport;
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
 
         try {
             // Exclude specific paths from the filter chain, e.g., login, token validation.
-            if (request.getServletPath().equalsIgnoreCase("/api/auth/signin") ||
-                    request.getServletPath().equalsIgnoreCase("/api/auth/signup") ||
+            if (request.getServletPath().startsWith("/actuator")
+                    || request.getServletPath().equalsIgnoreCase("/api/auth/sign-in") ||
+                    request.getServletPath().equalsIgnoreCase("/api/auth/sign-up") ||
                     request.getServletPath().equalsIgnoreCase("/api/auth/refresh-token")) {
                 filterChain.doFilter(request, response);
             } else {
