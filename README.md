@@ -4,6 +4,10 @@
 
 - OWASP dependency check in `mvn verify`
 
+# Swagger
+
+http://localhost:8080/swagger-ui/index.html
+
 # Attribution
 
 ## Authentication and access control
