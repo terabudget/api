@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: bank-transaction.yaml
       relativeToChangelogFile: true
+  - include:
+      file: budget-category.yaml
+      relativeToChangelogFile: true

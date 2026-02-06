@@ -8,12 +8,12 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: CHAR(36)
+                  type: VARCHAR(36)
                   constraints:
                     primaryKey: true
                     nullable: false
               - column:
                   name: originating_bank_account_id
-                  type: CHAR(36)
+                  type: VARCHAR(36)
                   constraints:
                     nullable: false
