@@ -8,5 +8,6 @@ import org.terabudget.api.domain.BankTransaction;
 
 @Repository
 public interface BankTransactionRepository extends JpaRepository<BankTransaction, String> {
+    List<BankTransaction> findTransactionsByOriginatingBankAccountId(String id);
     List<BankTransaction> findTransactionsByOriginatingBankAccountName(String name);
 }

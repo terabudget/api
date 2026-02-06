@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.terabudget.api.domain.BankAccount;
 
+/**
+ * Repository for BankAccount entities.
+ */
 @Repository
 public interface BankAccountRepository extends JpaRepository<BankAccount, String> {
     Optional<BankAccount> findOneByName(String name);

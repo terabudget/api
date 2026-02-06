@@ -1,6 +1,0 @@
-org.terabudget.authentication.jwtSecret=
-spring.liquibase.parameters.ui-client-secret=
-
-spring.datasource.url=jdbc:postgresql://localhost:5432/budget
-spring.datasource.password=
-spring.datasource.username=postgres
