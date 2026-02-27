@@ -7,4 +7,5 @@ import lombok.Data;
 public class BankAccountCreateDTO {
     @NotEmpty(message = "Bank account name must not be empty")
     private String name;
+    private boolean isOnBudget;
 }

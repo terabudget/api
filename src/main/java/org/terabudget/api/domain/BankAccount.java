@@ -2,7 +2,6 @@ package org.terabudget.api.domain;
 
 import java.util.List;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -30,6 +29,8 @@ public class BankAccount {
 
     @NotBlank(message = "Bank account name must not be blank")
     private String name;
+    
+    private boolean isOnBudget;
 
     @JsonIgnore
     @OneToMany(mappedBy = "originatingBankAccount")

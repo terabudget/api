@@ -1,6 +1,7 @@
 package org.terabudget.api.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,10 @@ import org.terabudget.api.repository.BankAccountRepository;
 public class BankAccountService {
     @Autowired
     private BankAccountRepository bankAccountRepository;
+
+    public Optional<BankAccount> get(String id) {
+        return bankAccountRepository.findById(id);
+    }
 
     /**
      * Get all bank accounts.
@@ -38,8 +43,10 @@ public class BankAccountService {
                             "Bank account already exists with name: " + bankAccountCreateDTO.getName());
                 });
 
-        BankAccount bankAccount = new BankAccount();
-        bankAccount.setName(bankAccountCreateDTO.getName());
+        BankAccount bankAccount = BankAccount.builder()
+                .name(bankAccountCreateDTO.getName())
+                .isOnBudget(bankAccountCreateDTO.isOnBudget())
+                .build();
         return bankAccountRepository.save(bankAccount);
     }
 

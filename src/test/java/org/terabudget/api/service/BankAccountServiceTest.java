@@ -1,11 +1,14 @@
 package org.terabudget.api.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.Optional;
 
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +19,7 @@ import org.terabudget.api.dto.BankAccountCreateDTO;
 import org.terabudget.api.repository.BankAccountRepository;
 
 @ExtendWith(MockitoExtension.class)
-class BankAccountServiceTest {
+public class BankAccountServiceTest {
 
     @Mock
     private BankAccountRepository bankAccountRepository;
@@ -25,60 +28,55 @@ class BankAccountServiceTest {
     private BankAccountService bankAccountService;
 
     @Test
-    void getAccounts_returnsAll() {
-        List<BankAccount> accounts = List.of(BankAccount.builder().id("1").name("A").build());
-        when(bankAccountRepository.findAll()).thenReturn(accounts);
-
-        List<BankAccount> result = bankAccountService.getAccounts();
-
-        assertEquals(accounts, result);
-        verify(bankAccountRepository).findAll();
+    void getByIdFound() {
+        BankAccount existing = Instancio.create(BankAccount.class);
+        when(bankAccountRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
+        Optional<BankAccount> result = bankAccountService.get(existing.getId());
+        assertEquals(existing, result.get());
     }
 
     @Test
-    void createBankAccount_whenExists_throws() {
-        BankAccountCreateDTO dto = new BankAccountCreateDTO();
-        dto.setName("Existing");
+    void getAccountsSuccess() {
+        BankAccount existing = Instancio.create(BankAccount.class);
+        List<BankAccount> accounts = List.of(existing);
+        when(bankAccountRepository.findAll()).thenReturn(accounts);
+        List<BankAccount> result = bankAccountService.getAccounts();
+        assertEquals(accounts, result);
+    }
 
-        when(bankAccountRepository.findOneByName("Existing"))
-                .thenReturn(Optional.of(BankAccount.builder().id("1").name("Existing").build()));
-
+    @Test
+    void createBankAccountWhenExistsThrows() {
+        BankAccountCreateDTO dto = Instancio.create(BankAccountCreateDTO.class);
+        BankAccount existing = Instancio.create(BankAccount.class);
+        when(bankAccountRepository.findOneByName(dto.getName()))
+                .thenReturn(Optional.of(existing));
         assertThrows(IllegalArgumentException.class, () -> bankAccountService.createBankAccount(dto));
-
         verify(bankAccountRepository, never()).save(any());
     }
 
     @Test
-    void createBankAccount_savesNew() {
-        BankAccountCreateDTO dto = new BankAccountCreateDTO();
-        dto.setName("NewAccount");
-
-        when(bankAccountRepository.findOneByName("NewAccount")).thenReturn(Optional.empty());
+    void createBankAccountSavesNew() {
+        BankAccountCreateDTO dto = Instancio.create(BankAccountCreateDTO.class);
+        when(bankAccountRepository.findOneByName(dto.getName())).thenReturn(Optional.empty());
         when(bankAccountRepository.save(any(BankAccount.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0, BankAccount.class));
-
         BankAccount created = bankAccountService.createBankAccount(dto);
-
-        assertEquals("NewAccount", created.getName());
-        verify(bankAccountRepository).save(any(BankAccount.class));
+        assertEquals(dto.getName(), created.getName());
     }
 
     @Test
-    void deleteBankAccount_whenNotFound_throws() {
+    void deleteBankAccountWhenNotFoundThrows() {
         when(bankAccountRepository.findById("1")).thenReturn(Optional.empty());
-
         assertThrows(IllegalArgumentException.class, () -> bankAccountService.deleteBankAccount("1"));
-
         verify(bankAccountRepository, never()).deleteById(anyString());
     }
 
     @Test
-    void deleteBankAccount_whenFound_deletes() {
-        when(bankAccountRepository.findById("1"))
-                .thenReturn(Optional.of(BankAccount.builder().id("1").name("A").build()));
+    void deleteBankAccountWhenFoundDeletes() {
+        BankAccount account = Instancio.create(BankAccount.class);
+        when(bankAccountRepository.findById(account.getId())).thenReturn(Optional.of(account));
+        bankAccountService.deleteBankAccount(account.getId());
 
-        bankAccountService.deleteBankAccount("1");
-
-        verify(bankAccountRepository).deleteById("1");
+        verify(bankAccountRepository).deleteById(account.getId());
     }
 }

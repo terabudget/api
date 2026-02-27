@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +28,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class BankAccountController {
     @Autowired
     private BankAccountService bankAccountService;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BankAccount> getById(@PathVariable String id) {
+        return bankAccountService.get(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     /**
      * Get all bank accounts.
@@ -50,7 +59,7 @@ public class BankAccountController {
         try {
             return bankAccountService.createBankAccount(bankAccountCreateDTO);
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
     }
 
@@ -61,11 +70,12 @@ public class BankAccountController {
      */
     @DeleteMapping("/{bankAccountId}")
     @Operation(summary = "Delete a bank account", description = "Deletes a bank account by its ID")
-    public void deleteAccount(String bankAccountId) {
+    public ResponseEntity<Void> deleteAccount(@PathVariable String bankAccountId) {
         try {
             bankAccountService.deleteBankAccount(bankAccountId);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
+        return ResponseEntity.noContent().build();
     }
 }

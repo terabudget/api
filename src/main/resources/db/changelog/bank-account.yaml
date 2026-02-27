@@ -17,3 +17,8 @@ databaseChangeLog:
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
+              - column:
+                  name: is_on_budget
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
