@@ -59,7 +59,7 @@ public class BankAccountControllerTest {
         BankAccount bankAccount = Instancio.create(BankAccount.class);
         BankAccountCreateDTO createDTO = Instancio.create(BankAccountCreateDTO.class);
         doReturn(bankAccount).when(mockBankAccountService).createBankAccount(createDTO);
-        assertEquals(bankAccount, bankAccountController.createAccount(createDTO));
+        assertEquals(bankAccount, bankAccountController.createAccount(createDTO).getBody());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class BankAccountControllerTest {
         BankAccount bankAccount = Instancio.create(BankAccount.class);
         BankAccountCreateDTO createDTO = Instancio.create(BankAccountCreateDTO.class);
         doReturn(bankAccount).when(mockBankAccountService).createBankAccount(createDTO);
-        assertEquals(bankAccount, bankAccountController.createAccount(createDTO));
+        assertEquals(bankAccount, bankAccountController.createAccount(createDTO).getBody());
     }
 
     @Test

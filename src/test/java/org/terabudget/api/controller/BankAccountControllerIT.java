@@ -1,5 +1,6 @@
 package org.terabudget.api.controller;
 
+import static org.instancio.Select.field;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -43,7 +44,7 @@ public class BankAccountControllerIT {
         mockMvc.perform(post("/api/bank-accounts")
                 .content(json)
                 .contentType("application/json"))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().json("""
                         {
                             "name": "%s",
@@ -75,15 +76,18 @@ public class BankAccountControllerIT {
 
     @Test
     public void getAccountReturnsAccount() throws Exception {
-        BankAccount account = bankAccountRepository
-                .save(BankAccount.builder().name("Test Account").build());
+        BankAccount account = Instancio.of(BankAccount.class)
+                .ignore(field(BankAccount::getId))
+                .create();
+        bankAccountRepository.save(account);
         mockMvc.perform(get("/api/bank-accounts/" + account.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
-                            "name": "Test Account"
+                            "name": "%s",
+                            "onBudget": %s
                         }
-                        """));
+                        """.formatted(account.getName(), account.isOnBudget())));
     }
 
     @Test
@@ -95,17 +99,22 @@ public class BankAccountControllerIT {
 
     @Test
     public void getAccountsReturnsAccounts() throws Exception {
-        bankAccountRepository.save(org.terabudget.api.domain.BankAccount.builder().name("Test Account").build());
+        BankAccount account = Instancio.of(BankAccount.class)
+                .ignore(field(BankAccount::getId))
+                .create();
+        bankAccountRepository.save(account);
 
         mockMvc.perform(get("/api/bank-accounts"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         [
                             {
-                                "name": "Test Account"
+
+                                    "name": "%s",
+                                    "onBudget": %s
                             }
                         ]
-                        """));
+                        """.formatted(account.getName(), account.isOnBudget())));
     }
 
     @Test

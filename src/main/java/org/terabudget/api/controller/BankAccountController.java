@@ -55,9 +55,10 @@ public class BankAccountController {
      */
     @Operation(summary = "Create a new bank account", description = "Creates a new bank account with the provided details")
     @PostMapping
-    public BankAccount createAccount(@RequestBody @Valid BankAccountCreateDTO bankAccountCreateDTO) {
+    public ResponseEntity<BankAccount> createAccount(@RequestBody @Valid BankAccountCreateDTO bankAccountCreateDTO) {
         try {
-            return bankAccountService.createBankAccount(bankAccountCreateDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(bankAccountService.createBankAccount(bankAccountCreateDTO));
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
