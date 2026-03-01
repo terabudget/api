@@ -1,7 +1,6 @@
 package org.terabudget.api.controller;
 
 import static org.instancio.Select.field;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -78,6 +79,7 @@ public class BankAccountControllerIT {
     public void getAccountReturnsAccount() throws Exception {
         BankAccount account = Instancio.of(BankAccount.class)
                 .ignore(field(BankAccount::getId))
+                .set(field(BankAccount::isClosed), true)
                 .create();
         bankAccountRepository.save(account);
         mockMvc.perform(get("/api/bank-accounts/" + account.getId()))
@@ -85,9 +87,10 @@ public class BankAccountControllerIT {
                 .andExpect(content().json("""
                         {
                             "name": "%s",
-                            "onBudget": %s
+                            "onBudget": %s,
+                            "closed": %s
                         }
-                        """.formatted(account.getName(), account.isOnBudget())));
+                        """.formatted(account.getName(), account.isOnBudget(), account.isClosed())));
     }
 
     @Test
@@ -117,17 +120,53 @@ public class BankAccountControllerIT {
                         """.formatted(account.getName(), account.isOnBudget())));
     }
 
-    @Test
-    public void deleteAccount() throws Exception {
-        BankAccount account = bankAccountRepository
-                .save(BankAccount.builder().name("Test Account").build());
-        mockMvc.perform(delete("/api/bank-accounts/" + account.getId()))
-                .andExpect(status().isNoContent());
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void closeAccount(boolean isAlreadyClosed) throws Exception {
+        BankAccount account = Instancio.of(BankAccount.class)
+                .set(field(BankAccount::isClosed), isAlreadyClosed)
+                .ignore(field(BankAccount::getId))
+                .create();
+        BankAccount saved = bankAccountRepository.save(account);
+        mockMvc.perform(post("/api/bank-accounts/" + saved.getId() + "/close"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                            "name": "%s",
+                            "onBudget": %s,
+                            "closed": true
+                        }
+                        """.formatted(saved.getName(), saved.isOnBudget())));
     }
 
     @Test
-    public void deleteAccountNotFound() throws Exception {
-        mockMvc.perform(delete("/api/bank-accounts/1"))
+    public void closeAccountNotFound() throws Exception {
+        mockMvc.perform(post("/api/bank-accounts/123456789/close"))
+                .andExpect(status().isNotFound());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void reopenAccount(boolean isAlreadyClosed) throws Exception {
+        BankAccount account = Instancio.of(BankAccount.class)
+                .set(field(BankAccount::isClosed), isAlreadyClosed)
+                .ignore(field(BankAccount::getId))
+                .create();
+        BankAccount saved = bankAccountRepository.save(account);
+        mockMvc.perform(post("/api/bank-accounts/" + saved.getId() + "/reopen"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                            "name": "%s",
+                            "onBudget": %s,
+                            "closed": false
+                        }
+                        """.formatted(saved.getName(), saved.isOnBudget())));
+    }
+
+    @Test
+    public void reopenAccountNotFound() throws Exception {
+        mockMvc.perform(post("/api/bank-accounts/123456789/reopen"))
                 .andExpect(status().isNotFound());
     }
 }

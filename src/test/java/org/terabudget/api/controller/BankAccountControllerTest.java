@@ -1,11 +1,9 @@
 package org.terabudget.api.controller;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,17 +61,18 @@ public class BankAccountControllerTest {
     }
 
     @Test
-    public void deleteAccountSuccess() {
-        String bankAccountId = "123";
-        assertDoesNotThrow(() -> bankAccountController.deleteAccount(bankAccountId));
-        verify(mockBankAccountService).deleteBankAccount(bankAccountId);
+    public void closeAccountSuccess() {
+        BankAccount account = Instancio.create(BankAccount.class);
+        doReturn(account).when(mockBankAccountService).closeBankAccount(account.getId());
+        BankAccount returned = bankAccountController.closeAccount(account.getId()).getBody();
+        assertEquals(account, returned);
     }
 
     @Test
-    public void deleteAccountThrowsResponseStatus() {
+    public void closeAccountIllegalArgumentExceptionThrowsResponseStatus() {
         String bankAccountId = "123";
-        doThrow(IllegalArgumentException.class).when(mockBankAccountService).deleteBankAccount(bankAccountId);
-        assertThrows(ResponseStatusException.class, () -> bankAccountController.deleteAccount(bankAccountId));
+        doThrow(IllegalArgumentException.class).when(mockBankAccountService).closeBankAccount(bankAccountId);
+        assertThrows(ResponseStatusException.class, () -> bankAccountController.closeAccount(bankAccountId));
     }
 
     @Test
@@ -89,5 +88,20 @@ public class BankAccountControllerTest {
         BankAccountCreateDTO createDTO = Instancio.create(BankAccountCreateDTO.class);
         doThrow(IllegalArgumentException.class).when(mockBankAccountService).createBankAccount(createDTO);
         assertThrows(ResponseStatusException.class, () -> bankAccountController.createAccount(createDTO));
+    }
+
+    @Test
+    public void reopenAccountSuccess() {
+        BankAccount account = Instancio.create(BankAccount.class);
+        doReturn(account).when(mockBankAccountService).reopenBankAccount(account.getId());
+        BankAccount returned = bankAccountController.reopenAccount(account.getId()).getBody();
+        assertEquals(account, returned);
+    }
+
+    @Test
+    public void reopenAccountIllegalArgumentExceptionThrowsResponseStatus() {
+        String bankAccountId = "123";
+        doThrow(IllegalArgumentException.class).when(mockBankAccountService).reopenBankAccount(bankAccountId);
+        assertThrows(ResponseStatusException.class, () -> bankAccountController.reopenAccount(bankAccountId));
     }
 }

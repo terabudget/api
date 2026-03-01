@@ -1,8 +1,8 @@
 package org.terabudget.api.service;
 
+import static org.instancio.Select.field;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -65,18 +65,35 @@ public class BankAccountServiceTest {
     }
 
     @Test
-    void deleteBankAccountWhenNotFoundThrows() {
+    void closeBankAccountWhenNotFoundThrows() {
         when(bankAccountRepository.findById("1")).thenReturn(Optional.empty());
-        assertThrows(IllegalArgumentException.class, () -> bankAccountService.deleteBankAccount("1"));
-        verify(bankAccountRepository, never()).deleteById(anyString());
+        assertThrows(IllegalArgumentException.class, () -> bankAccountService.closeBankAccount("1"));
+        verify(bankAccountRepository, never()).save(any(BankAccount.class));
     }
 
     @Test
-    void deleteBankAccountWhenFoundDeletes() {
-        BankAccount account = Instancio.create(BankAccount.class);
+    void closeBankAccountWhenFoundMarksAsClosed() {
+        BankAccount account = Instancio.of(BankAccount.class)
+                .set(field(BankAccount::isClosed), false)
+                .create();
         when(bankAccountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-        bankAccountService.deleteBankAccount(account.getId());
+        when(bankAccountRepository.save(account))
+                .thenAnswer(invocation -> invocation.getArgument(0, BankAccount.class));
+        BankAccount closedAccount = bankAccountService.closeBankAccount(account.getId());
+        assertTrue(closedAccount.isClosed());
+        verify(bankAccountRepository).save(account);
+    }
 
-        verify(bankAccountRepository).deleteById(account.getId());
+    @Test
+    void closeBankAccountWhenAlreadyClosedThenReturn() {
+        BankAccount account = Instancio.of(BankAccount.class)
+                .set(field(BankAccount::isClosed), true)
+                .create();
+        when(bankAccountRepository.findById(account.getId())).thenReturn(Optional.of(account));
+
+        BankAccount closedAccount = bankAccountService.closeBankAccount(account.getId());
+        assertTrue(closedAccount.isClosed());
+        assertEquals(account, closedAccount);
+        verify(bankAccountRepository, never()).save(account);
     }
 }

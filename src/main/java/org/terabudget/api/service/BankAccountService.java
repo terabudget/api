@@ -51,13 +51,36 @@ public class BankAccountService {
     }
 
     /**
-     * Delete a bank account by its ID.
+     * Close a bank account by its ID.
      * 
      * @param bankAccountId
      */
-    public void deleteBankAccount(String bankAccountId) {
-        bankAccountRepository.findById(bankAccountId)
+    public BankAccount closeBankAccount(String bankAccountId) {
+        BankAccount account = bankAccountRepository.findById(bankAccountId)
                 .orElseThrow(() -> new IllegalArgumentException("Bank account not found with ID: " + bankAccountId));
-        bankAccountRepository.deleteById(bankAccountId);
+
+        if (account.isClosed()) {
+            return account;
+        }
+
+        account.setClosed(true);
+        return bankAccountRepository.save(account);
+    }
+
+    /**
+     * Reopen a bank account by its ID.
+     * 
+     * @param bankAccountId
+     */
+    public BankAccount reopenBankAccount(String bankAccountId) {
+        BankAccount account = bankAccountRepository.findById(bankAccountId)
+                .orElseThrow(() -> new IllegalArgumentException("Bank account not found with ID: " + bankAccountId));
+
+        if (!account.isClosed()) {
+            return account;
+        }
+
+        account.setClosed(false);
+        return bankAccountRepository.save(account);
     }
 }

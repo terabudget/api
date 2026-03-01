@@ -22,3 +22,8 @@ databaseChangeLog:
                   type: BOOLEAN
                   constraints:
                     nullable: false
+              - column:
+                  name: is_closed
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false

@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,18 +64,37 @@ public class BankAccountController {
     }
 
     /**
-     * Delete a bank account by its ID.
+     * Close a bank account by its ID.
      * 
      * @param bankAccountId
      */
-    @DeleteMapping("/{bankAccountId}")
-    @Operation(summary = "Delete a bank account", description = "Deletes a bank account by its ID")
-    public ResponseEntity<Void> deleteAccount(@PathVariable String bankAccountId) {
+    @PostMapping("/{bankAccountId}/close")
+    @Operation(summary = "Close a bank account", description = "Closes a bank account by its ID")
+    public ResponseEntity<BankAccount> closeAccount(@PathVariable String bankAccountId) {
         try {
-            bankAccountService.deleteBankAccount(bankAccountId);
+            BankAccount closed = bankAccountService.closeBankAccount(bankAccountId);
+            return ResponseEntity.ok().body(closed);
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
-        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Reopen a bank account by its ID.
+     * 
+     * @param bankAccountId
+     */
+    @PostMapping("/{bankAccountId}/reopen")
+    @Operation(summary = "Reopen a bank account", description = "Reopens a closed bank account by its ID")
+
+    public ResponseEntity<BankAccount> reopenAccount(@PathVariable String bankAccountId) {
+        try {
+            BankAccount reopened = bankAccountService.reopenBankAccount(bankAccountId);
+            return ResponseEntity.ok().body(reopened);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }

@@ -3,6 +3,7 @@ package org.terabudget.api.domain;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,8 +30,11 @@ public class BankAccount {
 
     @NotBlank(message = "Bank account name must not be blank")
     private String name;
-    
+
+    @JsonProperty("onBudget")
     private boolean isOnBudget;
+    @JsonProperty("closed")
+    private boolean isClosed;
 
     @JsonIgnore
     @OneToMany(mappedBy = "originatingBankAccount")
